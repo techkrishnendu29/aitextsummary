@@ -89,12 +89,12 @@ export default function App() {
 
   {/* Tagline */}
   <p className="text-base md:text-lg text-indigo-100 font-medium">
-    ✨ Understand more, read less ✨
+    AI-Powered Text Summarization
   </p>
 
   {/* Subline */}
   <p className="text-xs md:text-sm text-indigo-200 mt-1 tracking-wide">
-    AI-Powered Text Summarization 
+    ✨ Understand more, read less ✨
   </p>
 
 </header>
