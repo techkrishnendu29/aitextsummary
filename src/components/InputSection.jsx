@@ -160,9 +160,6 @@ export default function InputSection({
       {/* Stats */}
       <div className="flex justify-between text-sm">
         <span className="text-indigo-600">📊 {wordCount} words</span>
-        <span className="text-gray-400">
-          {value.length > 0 ? `${Math.ceil(value.length / 4.7)} min read` : 'Enter text'}
-        </span>
       </div>
 
       {/* Validation */}
