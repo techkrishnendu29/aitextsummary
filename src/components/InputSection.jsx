@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Trash2, Send, Upload } from 'lucide-react'
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf"
-import pdfWorker from "pdfjs-dist/legacy/build/pdf.worker.min?url"
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import pdfWorker from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export default function InputSection({ 
   value, 
