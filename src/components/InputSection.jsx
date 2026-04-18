@@ -1,9 +1,5 @@
 import React, { useState } from 'react'
 import { Trash2, Send, Upload } from 'lucide-react'
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import pdfWorker from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export default function InputSection({ 
   value, 
@@ -24,15 +20,38 @@ export default function InputSection({
   const [extracting, setExtracting] = useState(false)
   const [fileName, setFileName] = useState("")
 
-  // 📄 PDF Upload Handler
+  // ✅ Load PDF.js from CDN (NO BUILD ERRORS EVER)
+  const loadPDFJS = () => {
+    return new Promise((resolve) => {
+      if (window.pdfjsLib) {
+        resolve(window.pdfjsLib)
+        return
+      }
+
+      const script = document.createElement("script")
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+
+      script.onload = () => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+        resolve(window.pdfjsLib)
+      }
+
+      document.body.appendChild(script)
+    })
+  }
+
+  // 📄 PDF Upload Handler (UPDATED)
   const handlePDFUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
 
-    setFileName(file.name) // ✅ store file name
+    setFileName(file.name)
     setExtracting(true)
 
     try {
+      const pdfjsLib = await loadPDFJS()
+
       const reader = new FileReader()
 
       reader.onload = async function () {
@@ -57,8 +76,8 @@ export default function InputSection({
       reader.readAsArrayBuffer(file)
 
     } catch (error) {
-      console.error("PDF extraction error:", error)
-      alert("❌ Failed to extract text from PDF")
+      console.error(error)
+      alert("❌ PDF extraction failed")
       setExtracting(false)
     }
   }
@@ -81,7 +100,7 @@ export default function InputSection({
         </span>
       </div>
 
-      {/* 📄 Upload Section (UPDATED UI) */}
+      {/* 📄 Upload Section */}
       <div className="flex flex-col gap-2">
 
         {/* Upload Button */}
@@ -117,7 +136,7 @@ export default function InputSection({
           </div>
         )}
 
-        {/* Loader text */}
+        {/* Loader */}
         {extracting && (
           <span className="text-xs text-gray-500 animate-pulse">
             Reading document...
@@ -131,64 +150,52 @@ export default function InputSection({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled || extracting}
-          placeholder="Paste your article, blog post, document, or upload a PDF... ✨"
-          className="w-full h-56 p-4 pr-12 border border-gray-200 rounded-xl bg-white/70 backdrop-blur-md 
+          placeholder="Paste your text or upload a PDF... ✨"
+          className="w-full h-56 p-4 border border-gray-200 rounded-xl bg-white/70 
           focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none 
-          transition-all duration-200 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed 
-          text-gray-700 placeholder-gray-400 shadow-sm"
+          transition-all resize-none disabled:bg-gray-50 text-gray-700 shadow-sm"
         />
-
-        <div className="absolute inset-0 rounded-xl pointer-events-none ring-1 ring-transparent focus-within:ring-indigo-200 transition-all" />
       </div>
 
       {/* Stats */}
-      <div className="flex items-center justify-between px-1">
-        <span className="text-sm font-medium text-indigo-600 flex items-center gap-1">
-          📊 {wordCount} words
-        </span>
-        <span className="text-xs text-gray-400">
+      <div className="flex justify-between text-sm">
+        <span className="text-indigo-600">📊 {wordCount} words</span>
+        <span className="text-gray-400">
           {value.length > 0 ? `${Math.ceil(value.length / 4.7)} min read` : 'Enter text'}
         </span>
       </div>
 
       {/* Validation */}
-      <p className={`text-xs px-1 font-medium transition-all ${
+      <p className={`text-xs ${
         isValid ? 'text-green-600' : 'text-red-500'
       }`}>
-        {wordCount} words / {characterCount} characters
-        {!isValid && ` • Minimum: ${MIN_WORDS} words, ${MIN_CHARS} chars`}
+        {wordCount} words / {characterCount} chars
       </p>
 
       {/* Buttons */}
-      <div className="flex gap-3 pt-1">
+      <div className="flex gap-3">
 
-        {/* Clear */}
         <button
           onClick={onClear}
           disabled={disabled || !value}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 
-          bg-gray-100/80 backdrop-blur hover:bg-gray-200 text-gray-700 
-          font-semibold rounded-xl transition-all duration-200 
-          disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl"
         >
           <Trash2 className="w-4 h-4" />
           Clear
         </button>
 
-        {/* Summarize */}
         <button
           onClick={onSummarize}
-          disabled={disabled || extracting || !value.trim() || !isValid}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 
-          text-white font-semibold rounded-xl transition-all duration-200 shadow-md
+          disabled={disabled || extracting || !isValid}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-white rounded-xl
           ${
             isValid
-              ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]'
-              : 'bg-gray-400 cursor-not-allowed'
+              ? 'bg-gradient-to-r from-indigo-600 to-pink-500'
+              : 'bg-gray-400'
           }`}
         >
           <Send className="w-4 h-4" />
-          {disabled ? 'Summarizing...' : extracting ? 'Processing PDF...' : 'Summarize'}
+          {extracting ? 'Processing PDF...' : 'Summarize'}
         </button>
 
       </div>
