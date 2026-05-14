@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-
+import axios from 'axios'
 import { Sparkles, Loader } from 'lucide-react'
 import InputSection from './components/InputSection'
 import StyleSelector from './components/StyleSelector'
